@@ -106,6 +106,7 @@ View current configuration:
 - `[p]verifyset captcha attempts <1-10>`
 - `[p]verifyset captcha timeout <60-3600>`
 - `[p]verifyset captcha onexhaust <none|kick>`
+- `[p]verifyset test` (admin preview of a generated CAPTCHA image/code; does not alter member state)
 
 ### Account age
 - `[p]verifyset accountage set <minimum_hours> <none|require|reject>`
