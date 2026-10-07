@@ -28,7 +28,7 @@ casing is unavailable.
 ## Install
 
 1. Add this repository path in Red:
-   - `[p]addpath /absolute/path/to/4cd-cogs`
+   - `[p]repo add 4cd-cogs https://github.com/4liceD/4cd-cogs`
 2. Install dependencies if prompted (`pillow` is required).
 3. Load the cog:
    - `[p]load verification`
