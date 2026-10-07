@@ -1,0 +1,12 @@
+{
+  "author": ["4liceD"],
+  "name": "Verification",
+  "short": "Role-gated CAPTCHA verification for new members.",
+  "description": "Assign pending roles to new members and require a CAPTCHA solve via persistent verification button before granting access roles.",
+  "install_msg": "Configure the cog with `[p]verifyset settings` and then post a panel with `[p]verifyset panel`.",
+  "requirements": ["pillow"],
+  "min_bot_version": "3.5.0",
+  "min_python_version": [3, 11, 0],
+  "tags": ["verification", "captcha", "security", "moderation"],
+  "end_user_data_statement": "This cog stores temporary verification state (captcha code, attempts, expiry timestamps, and pending timestamps) for members undergoing verification."
+}
