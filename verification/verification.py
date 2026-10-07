@@ -429,7 +429,16 @@ class Verification(commands.Cog):
                 conf,
                 reason="Verification: CAPTCHA solved",
             )
-            await self._record_case(interaction.user, "verification_success", "Solved CAPTCHA successfully.")
+
+            await self._record_case(
+                interaction.user,
+                "verification_success",
+                "Solved CAPTCHA successfully.",
+            )
+
+            if prompt is not None:
+                await prompt.close()
+
             await interaction.response.send_message(
                 "✅ Verification complete. You now have access.",
                 ephemeral=True,
