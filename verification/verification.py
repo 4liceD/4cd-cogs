@@ -392,7 +392,13 @@ class Verification(commands.Cog):
                 exc_info=True,
             )
 
-    async def handle_modal_submit(self, interaction: discord.Interaction, value: str) -> None:
+    async def handle_modal_submit(
+    self,
+    interaction: discord.Interaction,
+    value: str,
+    *,
+    prompt: CaptchaPrompt | None = None,
+) -> None:
         if interaction.guild is None or not isinstance(interaction.user, discord.Member):
             if not interaction.response.is_done():
                 await interaction.response.send_message("This can only be used in a server.", ephemeral=True)
