@@ -349,35 +349,41 @@ class Verification(commands.Cog):
             await member_conf.captcha_code.set(active_code)
             await member_conf.captcha_expires_at.set(expiry)
 
-        file = discord.File(render_captcha(active_code), filename="verification_captcha.png")
+                prompt = CaptchaPrompt(
+            self,
+            owner_id=interaction.user.id,
+            timeout=policy["timeout"],
+        )
+
+        embed = discord.Embed(
+            title="Your CAPTCHA",
+            description=(
+                "Enter the characters shown in the image below.\n"
+                f"This challenge expires <t:{expiry}:R>."
+            ),
+            color=discord.Color.blurple(),
+        )
+        embed.set_image(url="attachment://verification_captcha.png")
+        embed.set_footer(text="Only you can see this message.")
+
+        await interaction.response.send_message(
+            embed=embed,
+            file=discord.File(
+                render_captcha(active_code),
+                filename="verification_captcha.png",
+            ),
+            view=prompt,
+            ephemeral=True,
+        )
 
         try:
-            await interaction.user.send(
-                content=(
-                    "Complete verification by solving the attached CAPTCHA image. "
-                    f"This challenge expires <t:{expiry}:R>."
-                ),
-                file=file,
-            )
-        except discord.Forbidden:
-            await interaction.response.send_message(
-                "I couldn't send you a DM. Please enable DMs from server members and try again.",
-                ephemeral=True,
-            )
-            return
-        except discord.HTTPException:
-            await interaction.response.send_message(
-                "I couldn't send you a DM right now. Please make sure your DMs are enabled and try again.",
-                ephemeral=True,
-            )
-            return
-
-        await interaction.response.send_modal(CaptchaModal(self))
-        try:
-            await interaction.followup.send(
-                "CAPTCHA sent to your DMs. Complete the modal submission to finish verification.",
-                ephemeral=True,
-            )
+            prompt.message = await interaction.original_response()
+        except (
+            discord.NotFound,
+            discord.Forbidden,
+            discord.HTTPException,
+        ):
+            prompt.message = None
         except discord.HTTPException:
             log.debug(
                 "Failed to send post-modal DM confirmation for member %s in guild %s",
