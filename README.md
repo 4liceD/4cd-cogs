@@ -8,6 +8,14 @@ A standalone CAPTCHA verification cog for Red 3.x that does **not** depend on cu
 It uses Red's built-in `redbot.core.modlog` APIs opportunistically and continues working if modlog
 casing is unavailable.
 
+---
+## Disclaimer
+
+This project is partly vibecoded and provided as best-effort software with no guarantees.  
+Expect edge-case slop, test in your own environment, and use at your own risk.
+
+---
+
 ### Features
 
 - Assigns configured pending/unverified roles to new non-bot members on join.
@@ -29,8 +37,10 @@ casing is unavailable.
 
 1. Add this repository path in Red:
    - `[p]repo add 4cd-cogs https://github.com/4liceD/4cd-cogs`
-2. Install dependencies if prompted (`pillow` is required).
-3. Load the cog:
+2. Install the cog
+   - `[p]cog install 4cd-cogs verification`
+3. Install dependencies if prompted (`pillow` is required).
+4. Load the cog:
    - `[p]load verification`
 
 ## Required intents and permissions
