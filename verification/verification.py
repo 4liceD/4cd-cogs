@@ -25,6 +25,7 @@ class Verification(commands.Cog):
 
     DEFAULT_GUILD: dict[str, Any] = {
         "enabled": False,
+        "join_dm_enabled": True,
         "verification_channel_id": None,
         "panel_message_id": None,
         "pending_role_ids": [],
@@ -241,6 +242,13 @@ class Verification(commands.Cog):
             return not any(r.id in verified_ids for r in member.roles)
         return True
 
+    def _verification_channel_name(self, guild: discord.Guild, conf: dict[str, Any]) -> str:
+        channel_id = conf.get("verification_channel_id")
+        if not channel_id:
+            return "the verification channel"
+        channel = guild.get_channel(int(channel_id))
+        return channel.mention if channel else "the verification channel"
+
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member) -> None:
         if member.bot:
@@ -251,6 +259,30 @@ class Verification(commands.Cog):
             return
 
         await self._set_pending(member, conf, reason="Verification: joined server")
+        if conf.get("join_dm_enabled", True):
+            channel_name = self._verification_channel_name(member.guild, conf)
+            try:
+                await member.send(
+                    (
+                        f"Welcome to **{member.guild.name}**.\n"
+                        "Verification is required before you can access the server.\n"
+                        f"Please go to {channel_name} and press **Verify**."
+                    )
+                )
+            except discord.Forbidden:
+                log.info(
+                    "Could not send join verification DM to member %s in guild %s (DMs disabled).",
+                    member.id,
+                    member.guild.id,
+                )
+            except discord.HTTPException:
+                log.debug(
+                    "Failed to send join verification DM to member %s in guild %s",
+                    member.id,
+                    member.guild.id,
+                    exc_info=True,
+                )
+
         policy = self._active_policy(conf)
 
         if policy["min_age_hours"] > 0 and not self._account_age_ok(member, policy["min_age_hours"]):
@@ -282,8 +314,7 @@ class Verification(commands.Cog):
 
         configured_channel_id = conf["verification_channel_id"]
         if configured_channel_id and interaction.channel_id != int(configured_channel_id):
-            channel = interaction.guild.get_channel(int(configured_channel_id))
-            channel_name = channel.mention if channel else "the verification channel"
+            channel_name = self._verification_channel_name(interaction.guild, conf)
             await interaction.response.send_message(
                 f"Please use {channel_name} to start verification.",
                 ephemeral=True,
@@ -336,12 +367,24 @@ class Verification(commands.Cog):
             return
         except discord.HTTPException:
             await interaction.response.send_message(
-                "I couldn't send your CAPTCHA right now. Please try again in a moment.",
+                "I couldn't send you a DM right now. Please make sure your DMs are enabled and try again.",
                 ephemeral=True,
             )
             return
 
         await interaction.response.send_modal(CaptchaModal(self))
+        try:
+            await interaction.followup.send(
+                "CAPTCHA sent to your DMs. Complete the modal submission to finish verification.",
+                ephemeral=True,
+            )
+        except discord.HTTPException:
+            log.debug(
+                "Failed to send post-modal DM confirmation for member %s in guild %s",
+                interaction.user.id,
+                interaction.guild.id,
+                exc_info=True,
+            )
 
     async def handle_modal_submit(self, interaction: discord.Interaction, value: str) -> None:
         if interaction.guild is None or not isinstance(interaction.user, discord.Member):
@@ -488,6 +531,11 @@ class Verification(commands.Cog):
     async def verifyset_channel(self, ctx: commands.Context, channel: discord.TextChannel) -> None:
         await self.config.guild(ctx.guild).verification_channel_id.set(channel.id)
         await ctx.send(f"Verification channel set to {channel.mention}.")
+
+    @verifyset.command(name="joindm")
+    async def verifyset_joindm(self, ctx: commands.Context, enabled: bool) -> None:
+        await self.config.guild(ctx.guild).join_dm_enabled.set(enabled)
+        await ctx.send(f"Join DM onboarding enabled: **{enabled}**")
 
     @verifyset.command(name="panel")
     async def verifyset_panel(self, ctx: commands.Context) -> None:
@@ -707,6 +755,7 @@ class Verification(commands.Cog):
 
         embed = discord.Embed(title="Verification Settings", color=discord.Color.blurple())
         embed.add_field(name="Enabled", value=str(conf["enabled"]))
+        embed.add_field(name="Join DM onboarding", value=str(conf.get("join_dm_enabled", True)))
         embed.add_field(name="Raid mode", value=str(conf["raid_enabled"]))
         embed.add_field(name="Channel", value=channel.mention if channel else "Not set", inline=False)
         embed.add_field(
@@ -817,4 +866,3 @@ class Verification(commands.Cog):
                 if await self._kick_member(member, f"Bulk verification cleanup by {ctx.author}"):
                     kicked += 1
             await ctx.send(f"Kicked **{kicked}/{len(candidates)}** pending members.")
-

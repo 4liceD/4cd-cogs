@@ -19,6 +19,7 @@ Expect edge-case slop, test in your own environment, and use at your own risk.
 ### Features
 
 - Assigns configured pending/unverified roles to new non-bot members on join.
+- Optionally DMs new pending members on join with verification onboarding instructions (enabled by default).
 - Persistent **Verify** button panel in a configured verification channel.
 - DM image CAPTCHA generated with Pillow + modal code entry.
 - On success, adds configured access roles and removes pending roles.
@@ -91,6 +92,7 @@ View current configuration:
 ### Core
 - `[p]verifyset toggle <true|false>`
 - `[p]verifyset channel <#channel>`
+- `[p]verifyset joindm <true|false>`
 - `[p]verifyset panel`
 
 ### Pending roles
@@ -156,11 +158,17 @@ Bulk safety:
   - Pending role: deny access
   - Verified role: allow access
 
+Join onboarding behavior:
+- On join, non-bot members in enabled guilds are set pending and can receive a DM that tells them to go to the configured verification channel and press **Verify**.
+- The verification channel is intentionally kept uncluttered (no per-member join notifications are posted there).
+- When users press **Verify**, the CAPTCHA image is sent in DM and the existing modal submission flow remains in-server via interaction.
+
 ---
 
 ## Troubleshooting
 
 - **No join role assignment**: check Members intent and `verifyset toggle true`.
+- **No join onboarding DM / CAPTCHA DM**: enable "Direct Messages" from server members in Discord privacy settings, then press **Verify** again.
 - **Roles not applied**: check role hierarchy and `Manage Roles` permission.
 - **Users cannot start verification**: verify configured channel and panel exists.
 - **No modlog cases**: verification still works; modlog registration can be unavailable and is optional.
