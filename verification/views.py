@@ -11,37 +11,23 @@ if TYPE_CHECKING:
 
 _ = Translator("Verification", __file__)
 
-MAX_VIEW_TIMEOUT = 900
-
 
 class CaptchaPrompt(discord.ui.View):
-    """Private CAPTCHA image with a button that opens the code modal."""
+    """Private CAPTCHA image prompt with a button to open the modal."""
 
-    def __init__(
-        self,
-        cog: "Verification",
-        owner_id: int,
-        timeout: int,
-    ) -> None:
-        super().__init__(timeout=min(timeout, MAX_VIEW_TIMEOUT))
-
+    def __init__(self, cog: "Verification", owner_id: int, timeout: int) -> None:
+        super().__init__(timeout=min(timeout, 900))
         self.cog = cog
         self.owner_id = owner_id
         self.message: discord.Message | None = None
 
-    async def interaction_check(
-        self,
-        interaction: discord.Interaction,
-    ) -> bool:
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id == self.owner_id:
             return True
-
         if not interaction.response.is_done():
             await interaction.response.send_message(
-                "This CAPTCHA belongs to another member.",
-                ephemeral=True,
+                "This CAPTCHA belongs to another member.", ephemeral=True
             )
-
         return False
 
     @discord.ui.button(
@@ -50,29 +36,18 @@ class CaptchaPrompt(discord.ui.View):
         emoji="⌨️",
     )
     async def enter_code(
-        self,
-        interaction: discord.Interaction,
-        button: discord.ui.Button,
+        self, interaction: discord.Interaction, button: discord.ui.Button
     ) -> None:
         del button
-        await interaction.response.send_modal(
-            CaptchaModal(self.cog, self)
-        )
+        await interaction.response.send_modal(CaptchaModal(self.cog, self))
 
     async def close(self) -> None:
-        """Remove the private prompt from the user's view."""
         self.stop()
-
         if self.message is None:
             return
-
         try:
             await self.message.edit(view=None)
-        except (
-            discord.NotFound,
-            discord.Forbidden,
-            discord.HTTPException,
-        ):
+        except (discord.NotFound, discord.Forbidden, discord.HTTPException):
             pass
 
     async def on_timeout(self) -> None:
@@ -89,20 +64,12 @@ class CaptchaModal(discord.ui.Modal, title="Server verification"):
         required=True,
     )
 
-    def __init__(
-        self,
-        cog: "Verification",
-        prompt: CaptchaPrompt,
-    ) -> None:
+    def __init__(self, cog: "Verification", prompt: CaptchaPrompt) -> None:
         super().__init__(custom_id="verification:captcha_modal")
-
         self.cog = cog
         self.prompt = prompt
 
-    async def on_submit(
-        self,
-        interaction: discord.Interaction,
-    ) -> None:
+    async def on_submit(self, interaction: discord.Interaction) -> None:
         await self.cog.handle_modal_submit(
             interaction,
             str(self.captcha_code.value),
@@ -111,8 +78,6 @@ class CaptchaModal(discord.ui.Modal, title="Server verification"):
 
 
 class VerificationPanel(discord.ui.View):
-    """Persistent public verification panel."""
-
     def __init__(self, cog: "Verification") -> None:
         super().__init__(timeout=None)
         self.cog = cog
@@ -124,9 +89,7 @@ class VerificationPanel(discord.ui.View):
         emoji="✅",
     )
     async def start(
-        self,
-        interaction: discord.Interaction,
-        button: discord.ui.Button,
+        self, interaction: discord.Interaction, button: discord.ui.Button
     ) -> None:
         del button
         await self.cog.handle_panel_click(interaction)
