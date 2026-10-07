@@ -349,7 +349,7 @@ class Verification(commands.Cog):
             await member_conf.captcha_code.set(active_code)
             await member_conf.captcha_expires_at.set(expiry)
 
-                prompt = CaptchaPrompt(
+        prompt = CaptchaPrompt(
             self,
             owner_id=interaction.user.id,
             timeout=policy["timeout"],
@@ -393,12 +393,12 @@ class Verification(commands.Cog):
             )
 
     async def handle_modal_submit(
-    self,
-    interaction: discord.Interaction,
-    value: str,
-    *,
-    prompt: CaptchaPrompt | None = None,
-) -> None:
+        self,
+        interaction: discord.Interaction,
+        value: str,
+        *,
+        prompt: CaptchaPrompt | None = None,
+    ) -> None:
         if interaction.guild is None or not isinstance(interaction.user, discord.Member):
             if not interaction.response.is_done():
                 await interaction.response.send_message("This can only be used in a server.", ephemeral=True)
