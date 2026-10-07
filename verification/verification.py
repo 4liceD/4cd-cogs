@@ -416,8 +416,13 @@ class Verification(commands.Cog):
 
         if not code or expires_at <= now:
             await self._clear_captcha_state(interaction.user)
+
+            if prompt is not None:
+                await prompt.close()
+
             await interaction.response.send_message(
-                "That verification challenge is stale or expired. Press Verify again for a new challenge.",
+                "That verification challenge is stale or expired. "
+                "Press Verify again for a new challenge.",
                 ephemeral=True,
             )
             return
