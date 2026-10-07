@@ -161,3 +161,10 @@ Bulk safety:
 - Unload: `[p]unload verification`
 - Remove package as normal for your environment.
 - The cog implements `red_delete_data_for_user` for per-user member-state cleanup requests.
+
+---
+
+## Disclaimer
+
+This project is partly vibecoded and provided as best-effort software with no guarantees.  
+Expect edge-case slop, test in your own environment, and use at your own risk.
