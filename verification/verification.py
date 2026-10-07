@@ -13,7 +13,7 @@ from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import humanize_list
 
 from .captcha import generate_code, render_captcha
-from .views import CaptchaModal, VerificationPanel
+from .views import CaptchaPrompt, VerificationPanel
 
 log = logging.getLogger("red.4cd_cogs.verification")
 
